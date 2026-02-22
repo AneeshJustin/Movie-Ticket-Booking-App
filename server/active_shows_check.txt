@@ -1,0 +1,9 @@
+Connecting to ticket-booking db...
+Connected
+Current Server Time: 2026-02-20T15:46:12.824Z
+Current Local Time: 2/20/2026, 9:16:12 PM
+Active Shows Count: 0
+
+Checking ALL shows to see why they are not active:
+- ShowID: 69987cdeef3926939d95cd2f, Time: 2026-02-20T07:28:00.000Z (Past: true)
+- ShowID: 699870b6b03dbfe376c36d92, Time: 2026-02-06T17:34:00.000Z (Past: true)

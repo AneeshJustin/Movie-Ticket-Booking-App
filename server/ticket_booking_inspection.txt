@@ -1,0 +1,8 @@
+Connecting to ticket-booking db...
+Connected
+Movies count: 2
+- ID: 552524, Title: Lilo & Stitch
+- ID: 1236153, Title: Mercy
+Shows count: 2
+- ShowID: 699870b6b03dbfe376c36d92, MovieID: 1236153, Time: Fri Feb 06 2026 23:04:00 GMT+0530 (India Standard Time)
+- ShowID: 69987cdeef3926939d95cd2f, MovieID: 1236153, Time: Fri Feb 20 2026 12:58:00 GMT+0530 (India Standard Time)

@@ -1,0 +1,5 @@
+Connecting to movie-ticket db...
+Connected
+Collections: shows, movies
+Movies count: 0
+Shows count: 0

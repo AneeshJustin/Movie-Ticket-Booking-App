@@ -1,0 +1,5 @@
+Starting DB Check...
+Connecting to: mongodb+srv://ticket-booking-app:****@cluster0.robjjaq.mongodb.net/movie-ticket
+Connected to MongoDB
+Total Movies: 0
+Total Shows: 0

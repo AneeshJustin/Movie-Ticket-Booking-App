@@ -2,35 +2,39 @@ import React, { useEffect, useState } from 'react'
 import { dummyShowsData } from '../../assets/assets';
 import Loading from '../../components/Loading';
 import Title from '../../components/admin/Title';
+import { useAppContext } from '../../context/AppContext';
+import { dateFormat } from '../../lib/dateFormat';
 
 const ListShows = () => {
 
     const currency = import.meta.env.VITE_CURRENCY;
 
+
     const [shows, setShows] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const { axios, getToken, user } = useAppContext()
+
     const getAllShows = async () => {
         try {
-            setShows([{
-                movie: dummyShowsData[0],
-                showDateTime: "2025-06-30T02:30:00.000Z",
-                showPrice: 59,
-                occupiedSeats: {
-                    A1: "user_1",
-                    B1: "user_2",
-                    C1: "user_3"
+            const { data } = await axios.get('/api/admin/all-shows', {
+                headers: {
+                    Authorization: `Bearer ${await getToken()}`
                 }
-            }])
+            })
+            setShows(data.shows)
             setLoading(false)
         } catch (error) {
             console.log(error)
+            setLoading(false)
         }
     }
 
     useEffect(() => {
-        getAllShows()
-    }, [])
+        if (user) {
+            getAllShows()
+        }
+    }, [user])
 
     return !loading ? (
         <>
@@ -53,6 +57,7 @@ const ListShows = () => {
                                 <td className='p-2 min-w-45 pl-5'>{show.movie.title}
 
                                 </td>
+                                <td className='p-2'>{dateFormat(show.showDateTime)}</td>
                                 <td className='p-2'>{Object.keys(show.occupiedSeats).length}
 
                                 </td>

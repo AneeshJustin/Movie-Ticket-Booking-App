@@ -1,0 +1,25 @@
+Starting Global DB Check...
+Connected to MongoDB Cluster
+Available Databases:
+- movie-ticket
+  -- shows: 0 docs
+  -- movies: 0 docs
+- sample_mflix
+  -- embedded_movies: 3483 docs
+  -- users: 185 docs
+  -- movies: 21349 docs
+  -- sessions: 1 docs
+  -- theaters: 1564 docs
+  -- comments: 41079 docs
+- test
+  -- movies: 0 docs
+  -- shows: 0 docs
+- ticket-booking
+  -- bookings: 0 docs
+  -- users: 1 docs
+  -- shows: 2 docs
+     Sample Show: {"_id":"699870b6b03dbfe376c36d92","movie":"1236153","showDateTime":"2026-02-06T17:34:00.000Z","showPrice":222,"occupiedSeats":{},"__v":0}
+  -- movies: 2 docs
+- admin
+- local
+  -- oplog.rs: 9 docs

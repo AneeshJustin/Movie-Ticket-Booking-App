@@ -9,6 +9,6 @@ occupiedSeats: {type: Object, default: {}}
 
 )
 
-const Show = mongoose.model("Show",showSchema)
+const Show = mongoose.model("shows",showSchema)
 
 export default Show

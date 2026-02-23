@@ -9,7 +9,7 @@ import { useAppContext } from '../context/AppContext'
 const FeaturesSection = () => {
 
     const navigate = useNavigate()
-    const { shows } = useAppContext
+    const { shows } = useAppContext()
     return (
         <div className='px-6 md:px-16 lg:px-24 xl:px-44 overflow-hidden'>
             <div className='relative flex items-center justify-between pt-20 pb-10'>

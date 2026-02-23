@@ -35,3 +35,4 @@ export const stripeWebhook = async (request, response) => {
     response.status(500).send('Internal Server Error')
 }
 }
+export default stripeWebhook;

@@ -3,6 +3,7 @@
 import Booking from "../models/Booking.js"
 import Show from "../models/Show.js"
 import Stripe from "stripe"
+import { inngest } from "../inngest/index.js"
 
 const checkSeatAvailability = async (showId,selectedSeats)=>{
     try {
@@ -17,7 +18,7 @@ const checkSeatAvailability = async (showId,selectedSeats)=>{
     }
 }
 
-export const createBooking = async ()=>{
+export const createBooking = async (req, res)=>{
     try {
         const {userId} = req.auth()
         const {showId, selectedSeats} = req.body
@@ -75,7 +76,15 @@ const session = await stripeInstance.checkout.sessions.create({
 booking.paymentLink = session.url
 await booking.save()
 
-res.json({success:true,message:'booked successfully'})
+// Run Inngest function to check payment status after 10 minutes
+await inngest.send({
+    name:"app/checkpayment",
+    data:{
+        bookingId:booking._id.toString()
+    }
+})
+
+res.json({success:true,url:session.url})
     } catch (error) {
         console.log(error.message)
         res.json({success:false,message:error.message})

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Await, useNavigate, useParams } from 'react-router-dom'
+import { dummyDateTimeData, dummyShowsData } from '../assets/assets'
 import BlurCirlce from '../components/BlurCirlce'
 import { Heart, PlayCircleIcon, StarIcon } from 'lucide-react'
 import timeFormat from '../lib/timeFormat'
@@ -17,7 +18,7 @@ const MovieDetails = () => {
 
     const getShow = async () => {
         try {
-            const { data } = await axios.get(`/api/shows/${id}`)
+            const { data } = await axios.get(`/api/show/${id}`)
             if (data.success) {
                 setShow(data)
             }
@@ -33,7 +34,7 @@ const MovieDetails = () => {
             if (!user) return toast.error("Please login to add to favorites")
             const { data } = await axios.post(`/api/user/update-favorites`, { movieId: id },
                 {
-                    Headers: {
+                    headers: {
                         Authorization: `Bearer ${await getToken()}`
                     }
                 })

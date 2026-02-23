@@ -1,6 +1,7 @@
 import axios from "axios";
 import Movie from "../models/Movie.js";
 import Show from "../models/Show.js";
+import { inngest } from "../inngest/index.js";
 
 
 //API to get now playing movies
@@ -38,108 +39,81 @@ export const getNowPlayingMovies = async (req, res) => {
 
 
 //API to add a new show to the database
-export const addShow = async (req, res) => {
-  try {
-    const { movieId, showsInput, showPrice } = req.body;
+export const addShow = async (req,res)=>{
+    try {
+        const {movieId,showsInput,showPrice} = req.body
+        let movie = await Movie.findById(movieId)
 
-    // ---------------- VALIDATION ----------------
-    if (!movieId || !showsInput || !Array.isArray(showsInput)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid input data",
-      });
-    }
+        if(!movie){
+            //Fetch movie details and credits from TMDB API
+            const [movieDetailsResponse, movieCreditsResponse] = await Promise.all([
+                axios.get(`https://api.themoviedb.org/3/movie/${movieId}`,{
+            headers: {Authorization: `Bearer ${process.env.TMDB_API_KEY}`}
+                }),
+                axios.get(`https://api.themoviedb.org/3/movie/${movieId}/credits`,{
+                    headers: {Authorization: `Bearer ${process.env.TMDB_API_KEY}`}
+                })
+            ])
+            const movieApiData = movieDetailsResponse.data
+            const movieCreditsData = movieCreditsResponse.data
 
-    if (!showPrice) {
-      return res.status(400).json({
-        success: false,
-        message: "Show price is required",
-      });
-    }
+const movieDetails = {
+    _id: movieId,
+    title: movieApiData.title,
+    overview: movieApiData.overview,
+    poster_path: movieApiData.poster_path,
+    backdrop_path: movieApiData.backdrop_path,
+    release_date: movieApiData.release_date,
+    original_language: movieApiData.original_language,
+    tagline: movieApiData.tagline || '',
+    genres: movieApiData.genres,
+    vote_average: movieApiData.vote_average,
+    runtime: movieApiData.runtime,
+    casts: movieCreditsData.cast
+}
+// Add movie to database
 
-    // ---------------- FIND OR CREATE MOVIE ----------------
-    let movie = await Movie.findById(movieId);
-
-    if (!movie) {
-      const [movieDetailsResponse, movieCreditsResponse] = await Promise.all([
-        axios.get(`https://api.themoviedb.org/3/movie/${movieId}`, {
-          headers: {
-            Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
-          },
-        }),
-        axios.get(`https://api.themoviedb.org/3/movie/${movieId}/credits`, {
-          headers: {
-            Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
-          },
-        }),
-      ]);
-
-      const movieApiData = movieDetailsResponse.data;
-      const movieCreditsData = movieCreditsResponse.data;
-
-      movie = await Movie.create({
-        _id: movieId,
-        title: movieApiData.title,
-        overview: movieApiData.overview,
-        poster_path: movieApiData.poster_path,
-        backdrop_path: movieApiData.backdrop_path,
-        release_date: movieApiData.release_date,
-        original_language: movieApiData.original_language,
-        tagline: movieApiData.tagline || "",
-        genres: movieApiData.genres,
-        vote_average: movieApiData.vote_average,
-        runtime: movieApiData.runtime,
-        casts: movieCreditsData.cast,
-      });
-    }
-
-    // ---------------- CREATE SHOWS ----------------
-    const showsToCreate = [];
-
-    console.log("Received showsInput:", JSON.stringify(showsInput));
-
-    for (const show of showsInput) {
-      if (!show.date || !Array.isArray(show.time)) continue;
-
-      for (const time of show.time) {
-        // Safe ISO format
-        const showDateTime = new Date(`${show.date}T${time}:00.000Z`);
-
-        if (!isNaN(showDateTime.getTime())) {
-          showsToCreate.push({
-            movie: movie._id,
-            showDateTime,
-            showPrice,
-            occupiedSeats: {},
-          });
-        } else {
-          console.log("Invalid Date:", show.date, time);
+ movie = await Movie.create(movieDetails)
         }
-      }
+
+        const showsToCreate = []
+        console.log('Adding shows for movie:', movieId)
+        console.log('Shows Input:', JSON.stringify(showsInput))
+
+        showsInput.forEach(show => {
+            const showDate = show.date
+            show.time.forEach((time) => {
+                // Ensure time has seconds for reliable Date constructor across browsers
+                const dateTimeString = `${showDate}T${time}:00`
+                const showDateTime = new Date(dateTimeString)
+
+                if (isNaN(showDateTime.getTime())) {
+                    console.error('Invalid Date constructed:', dateTimeString)
+                    return
+                }
+
+                showsToCreate.push({
+                    movie: movieId,
+                    showDateTime,
+                    showPrice,
+                    occupiedSeats: {}
+                })
+            })
+        })
+
+        if (showsToCreate.length > 0) {
+            const result = await Show.insertMany(showsToCreate)
+            console.log('Shows created successfully:', result.length)
+            res.json({ success: true, message: `${result.length} Show(s) added successfully` })
+        } else {
+            console.log('No valid shows created from input')
+            res.json({ success: false, message: 'No valid show dates/times provided' })
+        }
+    } catch (error) {
+        console.error('Error in addShow:', error)
+        res.json({ success: false, message: error.message })
     }
-
-    if (showsToCreate.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No valid shows created. Check date/time format.",
-      });
-    }
-
-    const insertedShows = await Show.insertMany(showsToCreate);
-
-    return res.status(201).json({
-      success: true,
-      message: `${insertedShows.length} show(s) added successfully`,
-      data: insertedShows,
-    });
-  } catch (error) {
-    console.error("Error in addShow:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+}
 //API to get all shows from the database
 export const getShows = async (req,res)=>{
     try {

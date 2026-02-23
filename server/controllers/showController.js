@@ -1,6 +1,7 @@
 import axios from "axios";
 import Movie from "../models/Movie.js";
 import Show from "../models/Show.js";
+import { inngest } from "../inngest/index.js";
 
 
 //API to get now playing movies
@@ -81,18 +82,23 @@ const movieDetails = {
         })
 
         if (showsToCreate.length > 0) {
-            const result = await Show.insertMany(showsToCreate)
-            console.log('Shows created successfully:', result.length)
-            res.json({ success: true, message: `${result.length} Show(s) added successfully` })
-        } else {
-            console.log('No valid shows created from input')
-            res.json({ success: false, message: 'No valid show dates/times provided' })
+           await Show.insertMany(showsToCreate)
         }
+// Trigger Inngest event
+await inngest.send({
+    name: 'app/show/added',
+    data: {movieTitle: movie.title}
+})
+
+        res.json({success: true, message: 'Show added successfully'})
     } catch (error) {
-        console.error('Error in addShow:', error)
-        res.json({ success: false, message: error.message })
+        console.log(error)
+        res.json({success: false, message: error.message})
     }
 }
+
+
+       
 //API to get all shows from the database
 export const getShows = async (req,res)=>{
     try {
